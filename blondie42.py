@@ -72,16 +72,18 @@ class BlondieBrain:
         x.nn = x.nn.copy()
         return x
 
-    def _game2input(self,game):
+    @classmethod
+    def _game2input(cls,game):
         mysymbol = len(game.moves)%2
-        cells = [self._trsymb(x,mysymbol) for x in itertools.chain.from_iterable(game.grid_columns)]
-        cols  = [self._trsum(c,mysymbol)  for c in game.grid_columns]
-        rows  = [self._trsum(r,mysymbol)  for r in game.grid_rows]
-        diags = [self._trsum(r,mysymbol)  for r in game.diags]
+        cells = [cls._trsymb(x,mysymbol) for x in itertools.chain.from_iterable(game.grid_columns)]
+        cols  = [cls._trsum(c,mysymbol)  for c in game.grid_columns]
+        rows  = [cls._trsum(r,mysymbol)  for r in game.grid_rows]
+        diags = [cls._trsum(r,mysymbol)  for r in game.diags]
         l = itertools.chain.from_iterable([cells,cols,rows,diags])
         return list(l)
-        
-    def _trsymb(piece,mysymbol):
+
+    @classmethod
+    def _trsymb(cls,piece,mysymbol):
         #Transform symbol
         if piece == None:
             return 0
@@ -89,18 +91,19 @@ class BlondieBrain:
             return 1
         else:
             return -1
-     
-    def _trsum(l,mysymbol):
+
+    @classmethod
+    def _trsum(cls,l,mysymbol):
         #Transform symbol and sum list
         s = 0
         for ll in l:
-            s += trsymb(ll,mysymbol)
+            s += cls._trsymb(ll,mysymbol)
         return s
 
 def rungame(b1,b2):
     return (random.randint(0,5),random.randint(0,5))
 
-def main(game):
+def main():
     popsize   = 20
     keepratio = 10.0/100.0 #ratio of top performers to keep
     maxgen    = 10
