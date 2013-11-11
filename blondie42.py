@@ -1,20 +1,23 @@
 #!/home/kiru/pyenv/neuro2/bin/python
 
-import pybrain
-
 import random
 import datetime
 import re
 import os
+import itertools
 
 from pybrain.structure import FeedForwardNetwork, \
      LinearLayer, SigmoidLayer, FullConnection
 
 from pybrain.tools.xml.networkwriter import NetworkWriter
 from pybrain.tools.xml.networkreader import NetworkReader
+
+import runner
+
+DATADIR = "/media/tera/blondiehome"
      
 class BlondieBrain:
-    def __init__(self,insize=150,paramfile=None,datadir='blondiehome'):
+    def __init__(self,insize=139,paramfile=None,datadir=DATADIR):
         self.datadir = datadir
         if paramfile:
             f = os.path.join(datadir,paramfile)
@@ -46,18 +49,53 @@ class BlondieBrain:
 
             self.nn.sortModules()
 
-    def activate(self,inputdata):
-        return self.nn.activate(inputdata)
+    def nextmove(self,inputdata):
+        return int(self.nn.activate(inputdata))
 
     def save(self):
         f = os.path.join(self.datadir,self.name+".xml")
         NetworkWriter.writeToFile(self.nn, f)
+
+def trsymb(piece,mysymbol):
+    #Transform symbol
+    if piece == None:
+        return 0
+    elif piece == mysymbol:
+        return 1
+    else:
+        return -1
+
+def trsum(l,mysymbol):
+    #Transform symbol and sum list
+    s = 0
+    for ll in l:
+        s += trsymb(ll,mysymbol)
+    return s
+
+def game2input(game):
+    mysymbol = len(game.moves)%2
+    cells = [trsymb(x,mysymbol) for x in itertools.chain.from_iterable(game.grid_columns)]
+    cols  = [trsum(c,mysymbol) for c in game.grid_columns]
+    rows  = [trsum(r,mysymbol) for r in game.grid_rows]
+    diags = [trsum(r,mysymbol) for r in game.diags]
+    l = itertools.chain.from_iterable([cells,cols,rows,diags])
+    return list(l)
+        
+def main(game):
+    # popsize = 100
+    # pop = [BlondieBrain() for _ in range(100)]
+    # print pop
+    n = BlondieBrain()
+    ip = game2input(game)
+    print "move = ", n.nextmove(ip)
+    n.save()
     
-inp = [random.randint(0,6) for _ in range(150)]
-
-n = BlondieBrain()
-n.activate(inp)
-n.save()
-
-m = BlondieBrain(paramfile='blondie-2013-11-10-20-23-13-487250.xml')
-print(m.nn)
+if __name__ == '__main__':
+    game = runner.Game()
+    
+    # g.push_move(1)
+    # game2input(g)
+    # g.push_move(1)
+    # game2input(g)
+    
+    main(game)
