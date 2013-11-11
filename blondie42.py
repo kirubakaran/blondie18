@@ -7,6 +7,7 @@ import os
 import itertools
 import heapq
 import copy
+import argparse
 
 from pybrain.structure import FeedForwardNetwork, \
      LinearLayer, SigmoidLayer, FullConnection
@@ -30,7 +31,10 @@ class BlondieBrain:
         if paramfile:
             f = os.path.join(datadir,paramfile)
             self.nn = NetworkReader.readFrom(f)
-            self.name = paramfile.split('.')[0]
+            try:
+                self.name = re.search('(.*)-bestof-(.*)',paramfile).group(1)
+            except AttributeError:
+                self.name = "blondie-%s"%(datetime.datetime.now())
         else:
             self.nn = FeedForwardNetwork()
             tmpname = "blondie-%s"%(datetime.datetime.now())
@@ -130,13 +134,35 @@ def rungame(b1,b2):
                 g.print_grid()
                 return score
 
-def main():
-    popsize   = 20
+def main(loadfromdisk=False):
+    popsize   = 100
     keepratio = 10.0/100.0 #ratio of top performers to keep
-    maxgen    = 10
+    maxgen    = 100
 
-    gen = 0
-    pop = [BlondieBrain() for _ in range(popsize)]
+    if loadfromdisk:
+        blondiefiles = sorted([ f for f in os.listdir(DATADIR) if f.startswith('blondie-')])
+        pop = []
+        print "Loading files:",blondiefiles[-popsize:]
+        print
+        for bf in blondiefiles[-popsize:]:
+            pop.append(BlondieBrain(paramfile=bf))
+        if len(pop) < popsize:
+            for i in range(popsize-len(pop)):
+                pop.append(BlondieBrain())
+        try:
+            last = blondiefiles[-1]
+        except IndexError:
+            raise ValueError,"No blondie files found"
+        print "last",last
+        try:
+            gentxt = re.search('blondie-(.*)-gen(.*).xml',last).group(2)
+            print "Loaded Generation",gentxt
+            gen = int(gentxt) + 1
+        except AttributeError:
+            gen = 0
+    else:
+        gen = 0
+        pop = [BlondieBrain() for _ in range(popsize)]
     while gen < maxgen:
         print "Generation : %s"%(gen,)
         r = [0]*popsize
@@ -160,7 +186,8 @@ def main():
             newpop.append(pop[r.index(x)].copy())
 
         #throw in some wildcards
-        for x in bestn: #bestn used here just for count
+        wildn = bestn
+        for x in wildn:
             t = best.copy()
             t.randomize()
             newpop.append(t)
@@ -175,4 +202,8 @@ def main():
         gen += 1
             
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Create Connect-4 AI Players')
+    parser.add_argument('--loadfromdisk',required=False,action='store_true')
+    args = vars(parser.parse_args())
+    loadfromdisk = args['loadfromdisk']
+    main(loadfromdisk)
