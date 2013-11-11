@@ -67,6 +67,9 @@ class BlondieBrain:
     def mutate(self):
         self.nn.mutate()
 
+    def randomize(self):
+        self.nn.randomize()        
+        
     def copy(self):
         x = copy.deepcopy(self)
         x.nn = x.nn.copy()
@@ -101,7 +104,31 @@ class BlondieBrain:
         return s
 
 def rungame(b1,b2):
-    return (random.randint(0,5),random.randint(0,5))
+    points = {
+        'winner':1000,
+        'validmove':1,
+        'invalidmove':-100,
+        }
+    
+    score = [0,0]
+    g = runner.Game()
+    while True:
+        for i,b in enumerate([b1,b2]):
+            m = b.nextmove(g)
+            try:
+                if m<0 or m>6:
+                    raise ValueError
+                g.push_move(m)
+            except ValueError:
+                score[i] += points['invalidmove']
+                return score
+            else:
+                score[i] += points['validmove']
+            if g.is_won():
+                score[i] += points['winner']
+                print "We have a winner"
+                g.print_grid()
+                return score
 
 def main():
     popsize   = 20
@@ -116,13 +143,13 @@ def main():
         for i in range(popsize):
             for j in range(popsize):
                 if i == j: continue
-                ri,rj = rungame(pop[i],pop[j])
-                r[i] += ri
-                r[j] += rj
+                score = rungame(pop[i],pop[j])
+                r[i] += score[0]
+                r[j] += score[1]
                 
         #write best to disk
         win  = r.index(max(r))
-        print "winner of gen %03d is %02d"%(gen,win)
+        print "%02d won gen %03d with %d points"%(win,gen,max(r))
         best = pop[win]
         best.save('-bestof-gen%03d'%(gen,))
         
@@ -131,6 +158,14 @@ def main():
         newpop = []
         for x in bestn:
             newpop.append(pop[r.index(x)].copy())
+
+        #throw in some wildcards
+        for x in bestn: #bestn used here just for count
+            t = best.copy()
+            t.randomize()
+            newpop.append(t)
+            
+        #mutate best to fill rest of the spots
         spotsleft = popsize - len(newpop)
         for n in range(spotsleft):
             t = best.copy()
