@@ -150,7 +150,9 @@ def main(loadfromdisk=False):
             pop.append(BlondieBrain(paramfile=bf))
         if len(pop) < popsize:
             for i in range(popsize-len(pop)):
-                pop.append(BlondieBrain())
+                bb = BlondieBrain()
+                bb.mutate()
+                pop.append(bb)
         try:
             last = blondiefiles[-1]
         except IndexError:
@@ -177,9 +179,9 @@ def main(loadfromdisk=False):
                 
         #write best to disk
         win  = r.index(max(r))
-        print "%02d won gen %03d with %d points"%(win,gen,max(r))
+        print "%03d won gen %05d with %d points"%(win,gen,max(r))
         best = pop[win]
-        best.save('-bestof-gen%03d'%(gen,))
+        best.save('-bestof-gen%05d'%(gen,))
         
         #keep top best for next gen
         bestn = heapq.nlargest(int(popsize*keepratio),r)

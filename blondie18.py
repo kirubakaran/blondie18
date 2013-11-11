@@ -3,11 +3,13 @@
 import sys
 import copy
 import argparse
+import os
 
 import runner
-from blondie18 import BlondieBrain
+from blondiegen import BlondieBrain
 
 DEBUG = False
+DATADIR = "/media/tera/blondiehome"
 
 def sayit(t):
     sys.stderr.write('%s\n' % t)
@@ -17,16 +19,26 @@ def debugit(t):
     if DEBUG:
         sayit("> [%s]" % t)
 
+def quit(t):
+    sayit(t)
+    sys.exit()
+        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play Connect-4')
     parser.add_argument('--printit',required=False,action='store_true')
     parser.add_argument('--debug',required=False,action='store_true')
     parser.add_argument('--moves',required=False)
     parser.add_argument('--autopilot',required=False)
-    parser.add_argument('--blondiebrain',required=True)
+    parser.add_argument('--blondiebrain',required=True,help='Provide file name of the blondie neural network to load. Enter "latest" to load the latest.')
     args = vars(parser.parse_args())
 
-    blondie = BlondieBrain(paramfile=args['blondiebrain'])
+    if args['blondiebrain'] == 'latest':
+        blondiefiles = sorted([ f for f in os.listdir(DATADIR) if f.startswith('blondie-')])
+        blondiefile  = blondiefiles[-1]        
+    else:
+        blondiefile  = args['blondiebrain']
+    sayit("Loading Blondie : %s"%(blondiefile,))
+    blondie = BlondieBrain(paramfile=blondiefile)
     
     if args['autopilot']:
         autopilotn = int(args['autopilot'])
@@ -42,6 +54,7 @@ if __name__ == '__main__':
         moves = []
         
     game = runner.Game()
+    sayit("Ready")
     while not sys.stdin.closed:
         if len(moves) > 0:
             line = moves.pop(0)
@@ -59,8 +72,16 @@ if __name__ == '__main__':
         except ValueError:
             pass
         else:
-            game.push_move(l)
+            try:
+                game.push_move(l)
+            except ValueError:
+                quit("You made an illegal move and lost.")
+            if game.is_won():
+                quit("You won!")
         m = blondie.nextmove(game)
+        if m < 0 or m > 6:
+            print m
+            quit("I made an illegal move and lost.")
         err = False
         try:
             game.push_move(m)
@@ -69,9 +90,11 @@ if __name__ == '__main__':
         else:
             # output move
             print m
+            if game.is_won():
+                quit("I won!")
         if err:
             print m
-            print "I made an illegal move :-("
+            quit("I made an illegal move and lost.")
 
         if args['printit']:
             game.print_grid()
