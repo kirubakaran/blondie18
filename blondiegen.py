@@ -137,14 +137,16 @@ def rungame(b1,b2):
 def main(loadfromdisk=False):
     popsize   = 100
     keepratio = 10.0/100.0 #ratio of top performers to keep
-    maxgen    = 100
+    #maxgen    = 100
+    maxgen    = 10000
 
     if loadfromdisk:
         blondiefiles = sorted([ f for f in os.listdir(DATADIR) if f.startswith('blondie-')])
         pop = []
         print "Loading files:",blondiefiles[-popsize:]
         print
-        for bf in blondiefiles[-popsize:]:
+        lastn = int(popsize*keepration)
+        for bf in blondiefiles[-lastn:]:
             pop.append(BlondieBrain(paramfile=bf))
         if len(pop) < popsize:
             for i in range(popsize-len(pop)):
