@@ -5,6 +5,7 @@ import pybrain
 import random
 import datetime
 import re
+import os
 
 from pybrain.structure import FeedForwardNetwork, \
      LinearLayer, SigmoidLayer, FullConnection
@@ -14,8 +15,10 @@ from pybrain.tools.xml.networkreader import NetworkReader
      
 class BlondieBrain:
     def __init__(self,insize=150,paramfile=None,datadir='blondiehome'):
+        self.datadir = datadir
         if paramfile:
-            self.nn = NetworkReader.readFrom(paramfile)
+            f = os.path.join(datadir,paramfile)
+            self.nn = NetworkReader.readFrom(f)
             self.name = paramfile.split('.')[0]
         else:
             self.insize = insize
@@ -47,10 +50,14 @@ class BlondieBrain:
         return self.nn.activate(inputdata)
 
     def save(self):
-        NetworkWriter.writeToFile(self.nn, "blondestore/%s.xml"%(self.name))
+        f = os.path.join(self.datadir,self.name+".xml")
+        NetworkWriter.writeToFile(self.nn, f)
     
 inp = [random.randint(0,6) for _ in range(150)]
 
 n = BlondieBrain()
 n.activate(inp)
 n.save()
+
+m = BlondieBrain(paramfile='blondie-2013-11-10-20-23-13-487250.xml')
+print(m.nn)
