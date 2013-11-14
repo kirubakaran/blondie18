@@ -6,7 +6,7 @@ import argparse
 import os
 
 import runner
-from blondiegen import BlondieBrain
+from genblondie import BlondieBrain
 
 DEBUG = False
 DATADIR = "/media/tera/blondiehome"

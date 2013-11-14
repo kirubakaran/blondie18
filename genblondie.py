@@ -130,8 +130,8 @@ def rungame(b1,b2):
                 score[i] += points['validmove']
             if g.is_won():
                 score[i] += points['winner']
-                print "We have a winner"
-                g.print_grid()
+                #print "We have a winner"
+                #g.print_grid()
                 return score
 
 def main(loadfromdisk=False):
@@ -145,7 +145,7 @@ def main(loadfromdisk=False):
         pop = []
         print "Loading files:",blondiefiles[-popsize:]
         print
-        lastn = int(popsize*keepration)
+        lastn = int(popsize*keepratio)
         for bf in blondiefiles[-lastn:]:
             pop.append(BlondieBrain(paramfile=bf))
         if len(pop) < popsize:
