@@ -16,11 +16,10 @@ from pybrain.tools.xml.networkwriter import NetworkWriter
 from pybrain.tools.xml.networkreader import NetworkReader
 
 import runner
+import config
 
-DATADIR = "/media/tera/blondiehome"
-     
 class BlondieBrain:
-    def __init__(self,insize=None,paramfile=None,datadir=DATADIR):
+    def __init__(self,insize=None,paramfile=None,datadir=config.DATADIR):
         self.datadir = datadir
         if insize == None:
             g = runner.Game()
@@ -134,6 +133,14 @@ def rungame(b1,b2):
                 #g.print_grid()
                 return score
 
+def getgen(f):
+    #get generation number from filename
+    gen = re.search('(.*)-bestof-gen(.*).xml',f).group(2)
+    if gen:
+        return int(gen)
+    else:
+        return 0
+            
 def main(loadfromdisk=False):
     popsize   = 100
     keepratio = 10.0/100.0 #ratio of top performers to keep
@@ -141,7 +148,7 @@ def main(loadfromdisk=False):
     maxgen    = 10000
 
     if loadfromdisk:
-        blondiefiles = sorted([ f for f in os.listdir(DATADIR) if f.startswith('blondie-')])
+        blondiefiles = sorted([ f for f in os.listdir(config.DATADIR) if f.startswith('blondie-')],key=getgen)
         pop = []
         print "Loading files:",blondiefiles[-popsize:]
         print

@@ -7,9 +7,9 @@ import os
 
 import runner
 from genblondie import BlondieBrain
+import config
 
-DEBUG = False
-DATADIR = "/media/tera/blondiehome"
+DEBUG = config.DEBUG
 
 def sayit(t):
     sys.stderr.write('%s\n' % t)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
 
     if args['blondiebrain'] == 'latest':
-        blondiefiles = sorted([ f for f in os.listdir(DATADIR) if f.startswith('blondie-')])
+        blondiefiles = sorted([ f for f in os.listdir(config.DATADIR) if f.startswith('blondie-')])
         blondiefile  = blondiefiles[-1]        
     else:
         blondiefile  = args['blondiebrain']
@@ -44,8 +44,9 @@ if __name__ == '__main__':
         autopilotn = int(args['autopilot'])
     else:
         autopilotn = 0
-    
-    DEBUG = args['debug']
+
+    if args['debug']:
+        DEBUG = args['debug']
     
     #if moves are supplied, play them
     if args['moves']:
