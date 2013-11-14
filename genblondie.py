@@ -8,6 +8,7 @@ import itertools
 import heapq
 import copy
 import argparse
+from pprint import pprint as pp
 
 from pybrain.structure import FeedForwardNetwork, \
      LinearLayer, SigmoidLayer, FullConnection
@@ -107,12 +108,6 @@ class BlondieBrain:
         return s
 
 def rungame(b1,b2):
-    points = {
-        'winner':1000,
-        'validmove':1,
-        'invalidmove':-100,
-        }
-    
     score = [0,0]
     g = runner.Game()
     while True:
@@ -123,12 +118,12 @@ def rungame(b1,b2):
                     raise ValueError
                 g.push_move(m)
             except ValueError:
-                score[i] += points['invalidmove']
+                score[i] += config.points['invalidmove']
                 return score
             else:
-                score[i] += points['validmove']
+                score[i] += config.points['validmove']
             if g.is_won():
-                score[i] += points['winner']
+                score[i] += config.points['winner']
                 #print "We have a winner"
                 #g.print_grid()
                 return score
@@ -142,29 +137,20 @@ def getgen(f):
         return 0
             
 def main(loadfromdisk=False):
-    popsize   = 100
-    keepratio = 10.0/100.0 #ratio of top performers to keep
-    #maxgen    = 100
-    maxgen    = 10000
-
     if loadfromdisk:
-        blondiefiles = sorted([ f for f in os.listdir(config.DATADIR) if f.startswith('blondie-')],key=getgen)
+        blondiefiles = sorted([f for f in os.listdir(config.DATADIR) if f.startswith('blondie-')],key=getgen)
         pop = []
-        print "Loading files:",blondiefiles[-popsize:]
+        print "Loading files:"
+        pp(blondiefiles[-config.popsize:])
         print
-        lastn = int(popsize*keepratio)
+        lastn = int(config.popsize*config.keepratio)
         for bf in blondiefiles[-lastn:]:
             pop.append(BlondieBrain(paramfile=bf))
-        if len(pop) < popsize:
-            for i in range(popsize-len(pop)):
+        if len(pop) < config.popsize:
+            for i in range(config.popsize-len(pop)):
                 bb = BlondieBrain()
                 bb.mutate()
                 pop.append(bb)
-        try:
-            last = blondiefiles[-1]
-        except IndexError:
-            raise ValueError,"No blondie files found"
-        print "last",last
         try:
             gentxt = re.search('blondie-(.*)-gen(.*).xml',last).group(2)
             print "Loaded Generation",gentxt
@@ -173,12 +159,12 @@ def main(loadfromdisk=False):
             gen = 0
     else:
         gen = 0
-        pop = [BlondieBrain() for _ in range(popsize)]
-    while gen < maxgen:
+        pop = [BlondieBrain() for _ in range(config.popsize)]
+    while gen < config.maxgen:
         print "Generation : %s"%(gen,)
-        r = [0]*popsize
-        for i in range(popsize):
-            for j in range(popsize):
+        r = [0]*config.popsize
+        for i in range(config.popsize):
+            for j in range(config.popsize):
                 if i == j: continue
                 score = rungame(pop[i],pop[j])
                 r[i] += score[0]
@@ -191,7 +177,7 @@ def main(loadfromdisk=False):
         best.save('-bestof-gen%05d'%(gen,))
         
         #keep top best for next gen
-        bestn = heapq.nlargest(int(popsize*keepratio),r)
+        bestn = heapq.nlargest(int(config.popsize*config.keepratio),r)
         newpop = []
         for x in bestn:
             newpop.append(pop[r.index(x)].copy())
@@ -204,7 +190,7 @@ def main(loadfromdisk=False):
             newpop.append(t)
             
         #mutate best to fill rest of the spots
-        spotsleft = popsize - len(newpop)
+        spotsleft = config.popsize - len(newpop)
         for n in range(spotsleft):
             t = best.copy()
             t.mutate()
