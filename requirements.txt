@@ -1,0 +1,5 @@
+PyBrain==0.3
+argparse==1.2.1
+numpy==1.8.0
+scipy==0.13.0
+wsgiref==0.1.2

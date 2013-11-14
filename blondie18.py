@@ -1,4 +1,4 @@
-#!/home/kiru/pyenv/neuro2/bin/python
+#!/usr/bin/env python
 
 import sys
 import copy
