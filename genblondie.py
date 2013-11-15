@@ -79,7 +79,7 @@ def main(loadfromdisk=False):
         best = pop[win]
         if gen%int(CONFIG['gen_per_save']) == 0:
             best.save('-bestof-gen%05d'%(gen,))
-            print "Wrote to disk"
+            print "Wrote to disk (%s)"%(CONFIG['datadir'],)
         
         #keep top best for next gen
         bestn = heapq.nlargest(int(popsize*keepratio),r)
