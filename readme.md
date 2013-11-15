@@ -23,7 +23,7 @@ You can play with blondie like this:
 ```
 Or
 ```
-./blondie18.py --blondiebrain blondie-2013-11-14-20-52-54-964185-bestof-gen00000.xml --datadir /media/tera/blondiehome
+./blondie18.py --blondiebrain blondie-bestof-gen00000.xml --datadir /media/tera/blondiehome
 ```
 
 ```
