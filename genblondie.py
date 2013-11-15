@@ -62,7 +62,7 @@ def main(loadfromdisk=False):
             gen = 0
     else:
         gen = 0
-        pop = [BlondieBrain() for _ in range(popsize)]
+        pop = [BlondieBrain(CONFIG['datadir']) for _ in range(popsize)]
     while gen < maxgen:
         print "Generation : %s"%(gen,)
         r = [0]*popsize
@@ -77,7 +77,9 @@ def main(loadfromdisk=False):
         win  = r.index(max(r))
         print "%03d won gen %05d with %d points"%(win,gen,max(r))
         best = pop[win]
-        best.save('-bestof-gen%05d'%(gen,))
+        if gen%int(CONFIG['gen_per_save']) == 0:
+            best.save('-bestof-gen%05d'%(gen,))
+            print "Wrote to disk"
         
         #keep top best for next gen
         bestn = heapq.nlargest(int(popsize*keepratio),r)
@@ -116,5 +118,12 @@ if __name__ == '__main__':
     config_custom  = dict(cf.items(c))
     for k,v in config_custom.iteritems():
         CONFIG[k] = v
-    
+
+    if not os.path.exists(CONFIG['datadir']):
+        print "Please create",CONFIG['datadir']
+        print "Exiting ..."
+        sys.exit()
+
+    print "Best of every %s generations will be saved to disk"%(CONFIG['gen_per_save'])
+        
     main(loadfromdisk)

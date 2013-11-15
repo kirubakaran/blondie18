@@ -2,6 +2,7 @@ import itertools
 import datetime
 import re
 import os
+import copy
 
 from pybrain.structure import FeedForwardNetwork, \
      LinearLayer, SigmoidLayer, FullConnection
