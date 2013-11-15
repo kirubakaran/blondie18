@@ -5,11 +5,8 @@ import copy
 import argparse
 import os
 
+from blondiebrain import BlondieBrain, latestblondies
 import runner
-from genblondie import BlondieBrain
-import config
-
-DEBUG = config.DEBUG
 
 def sayit(t):
     sys.stderr.write('%s\n' % t)
@@ -29,16 +26,16 @@ if __name__ == '__main__':
     parser.add_argument('--debug',required=False,action='store_true')
     parser.add_argument('--moves',required=False)
     parser.add_argument('--autopilot',required=False)
+    parser.add_argument('--datadir',required=True)
     parser.add_argument('--blondiebrain',required=True,help='Provide file name of the blondie neural network to load. Enter "latest" to load the latest.')
     args = vars(parser.parse_args())
 
     if args['blondiebrain'] == 'latest':
-        blondiefiles = sorted([ f for f in os.listdir(config.DATADIR) if f.startswith('blondie-')])
-        blondiefile  = blondiefiles[-1]        
+        blondiefile = latestblondies(args['datadir'],1)[0]
     else:
         blondiefile  = args['blondiebrain']
     sayit("Loading Blondie : %s"%(blondiefile,))
-    blondie = BlondieBrain(paramfile=blondiefile)
+    blondie = BlondieBrain(paramfile=blondiefile,datadir=args['datadir'])
     
     if args['autopilot']:
         autopilotn = int(args['autopilot'])
