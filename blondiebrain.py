@@ -12,7 +12,7 @@ from pybrain.tools.xml.networkreader import NetworkReader
 import runner
 
 class BlondieBrain:
-    def __init__(self,datadir,insize=None,paramfile=None):
+    def __init__(self,datadir,insize=None,outsize=None,paramfile=None):
         self.datadir = datadir
         if insize == None:
             g = runner.Game()
@@ -20,6 +20,10 @@ class BlondieBrain:
             self.insize = len(ip)
         else:
             self.insize = insize
+        if outsize == None:
+            self.outsize = 1
+        else:
+            self.outsize = outsize
         if paramfile:
             f = os.path.join(self.datadir,paramfile)
             self.nn = NetworkReader.readFrom(f)
@@ -35,7 +39,7 @@ class BlondieBrain:
             inLayer = LinearLayer(self.insize)
             hiddenLayer1 = SigmoidLayer(self.insize)
             hiddenLayer2 = SigmoidLayer(self.insize)
-            outLayer = LinearLayer(1)
+            outLayer = LinearLayer(self.outsize)
 
             self.nn.addInputModule(inLayer)
             self.nn.addModule(hiddenLayer1)
@@ -54,7 +58,12 @@ class BlondieBrain:
 
     def nextmove(self,game):
         inputdata = self._game2input(game)
-        return int(self.nn.activate(inputdata))
+        if self.outsize == 1:
+            op =  int(self.nn.activate(inputdata))
+        else:
+            r = self.nn.activate(inputdata)
+            op =  r.argmax()
+        return op
 
     def save(self,suffix=''):
         f = os.path.join(self.datadir,self.name+suffix+".xml")

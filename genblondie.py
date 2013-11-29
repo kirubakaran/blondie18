@@ -14,7 +14,7 @@ from pprint import pprint as pp
 from blondiebrain import BlondieBrain, latestblondies
 import runner
 
-def rungame(b1,b2):
+def rungame(b1,b2,show=False):
     score = [0,0]
     g = runner.Game()
     while True:
@@ -31,8 +31,8 @@ def rungame(b1,b2):
                 score[i] += int(CONFIG['points_validmove'])
             if g.is_won():
                 score[i] += int(CONFIG['points_winner'])
-                #print "We have a winner"
-                #g.print_grid()
+                if show:
+                    g.print_grid()
                 return score
 
 def main(loadfromdisk=False):
@@ -40,6 +40,7 @@ def main(loadfromdisk=False):
     keepratio = float(CONFIG['keepratio'])
     randratio = float(CONFIG['randratio'])
     maxgen    = int(CONFIG['maxgen'])
+    outsize   = int(CONFIG['outsize'])
     if loadfromdisk:
         lastn = int(popsize*keepratio)
         blondiefiles = latestblondies(CONFIG['datadir'],lastn)
@@ -48,10 +49,10 @@ def main(loadfromdisk=False):
         print
         pop = []
         for bf in blondiefiles:
-            pop.append(BlondieBrain(paramfile=bf))
+            pop.append(BlondieBrain(paramfile=bf,outsize=outsize))
         if len(pop) < popsize:
             for i in range(popsize-len(pop)):
-                bb = BlondieBrain()
+                bb = BlondieBrain(outsize=outsize)
                 bb.mutate()
                 pop.append(bb)
         try:
@@ -62,7 +63,7 @@ def main(loadfromdisk=False):
             gen = 0
     else:
         gen = 0
-        pop = [BlondieBrain(CONFIG['datadir']) for _ in range(popsize)]
+        pop = [BlondieBrain(CONFIG['datadir'],outsize=outsize) for _ in range(popsize)]
     while gen < maxgen:
         print "Generation : %s"%(gen,)
         r = [0]*popsize
@@ -72,7 +73,7 @@ def main(loadfromdisk=False):
                 score = rungame(pop[i],pop[j])
                 r[i] += score[0]
                 r[j] += score[1]
-                
+
         #write best to disk
         win  = r.index(max(r))
         print "%03d won gen %05d with %d points"%(win,gen,max(r))
@@ -81,10 +82,27 @@ def main(loadfromdisk=False):
             best.save('-bestof-gen%05d'%(gen,))
             print "Wrote to disk (%s)"%(CONFIG['datadir'],)
         
+        #rerun prev best and current best
+        #to show in output
+        if win == 0:
+            vmsg = "*  Defending champion retains title!  *"
+            print "*"*len(vmsg)
+            print vmsg
+            print "*"*len(vmsg)
+        msg =  "Game with defending champion playing %s and current champion playing %s"
+        print msg%(0,1)
+        sc0,sc1 = rungame(pop[0],pop[win],show=True)
+        #print "Scores:",sc0,sc1
+        print msg%(1,0)
+        sc1,sc0 = rungame(pop[win],pop[0],show=True)
+        #print "Scores:",sc1,sc0
+        print
+
         #keep top best for next gen
         bestn = heapq.nlargest(int(popsize*keepratio),r)
         newpop = []
         for x in bestn:
+            #print "copying %02d to next gen as %d"%(r.index(x),len(newpop))
             newpop.append(pop[r.index(x)].copy())
 
         #throw in some wildcards
