@@ -26,6 +26,9 @@ def rungame(b1,b2,show=False):
                 g.push_move(m)
             except ValueError:
                 score[i] += int(CONFIG['points_invalidmove'])
+                if show:
+                    g.print_grid()
+                    print "Invalid move:",m
                 return score
             else:
                 score[i] += int(CONFIG['points_validmove'])
@@ -49,16 +52,19 @@ def main(loadfromdisk=False):
         print
         pop = []
         for bf in blondiefiles:
-            pop.append(BlondieBrain(paramfile=bf,outsize=outsize))
+            pop.append(BlondieBrain(datadir=CONFIG['datadir'],paramfile=bf,outsize=outsize))
         if len(pop) < popsize:
             for i in range(popsize-len(pop)):
-                bb = BlondieBrain(outsize=outsize)
+                bb = BlondieBrain(datadir=CONFIG['datadir'],outsize=outsize)
                 bb.mutate()
                 pop.append(bb)
         try:
+            last = blondiefiles[-1]
             gentxt = re.search('blondie-(.*)-gen(.*).xml',last).group(2)
             print "Loaded Generation",gentxt
             gen = int(gentxt) + 1
+        except IndexError:
+            gen = 0
         except AttributeError:
             gen = 0
     else:
@@ -85,7 +91,7 @@ def main(loadfromdisk=False):
         #rerun prev best and current best
         #to show in output
         if win == 0:
-            vmsg = "*  Defending champion retains title!  *"
+            vmsg = "*  Defending champion retains the title!  *"
             print "*"*len(vmsg)
             print vmsg
             print "*"*len(vmsg)

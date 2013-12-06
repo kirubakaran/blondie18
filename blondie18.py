@@ -35,7 +35,7 @@ if __name__ == '__main__':
     else:
         blondiefile  = args['blondiebrain']
     sayit("Loading Blondie : %s"%(blondiefile,))
-    blondie = BlondieBrain(paramfile=blondiefile,datadir=args['datadir'])
+    blondie = BlondieBrain(paramfile=blondiefile,datadir=args['datadir'],outsize=7)
     
     if args['autopilot']:
         autopilotn = int(args['autopilot'])
