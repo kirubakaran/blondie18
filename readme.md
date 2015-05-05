@@ -1,3 +1,5 @@
+The name blondie18 was inspired by [this project](http://en.wikipedia.org/wiki/Blondie24).
+
 Evolve blondie by running genblondie.py. You can set the parameters in
 a section in blondie.conf
 
